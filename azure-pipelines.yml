@@ -11,7 +11,7 @@ pool:
 
 steps:
 - script: echo Hello Nikhil
-  displayName: 'Test'
+  displayName: 'Print Message'
 
 - script: |
     echo Add other tasks to build, test, and deploy your project.
