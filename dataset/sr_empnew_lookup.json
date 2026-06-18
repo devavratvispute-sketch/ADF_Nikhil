@@ -1,0 +1,34 @@
+{
+	"name": "sr_empnew_lookup",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase4",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Source"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "EmpID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "EmpName",
+				"type": "varchar"
+			},
+			{
+				"name": "insertrecordtimestamp",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "New_employees"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

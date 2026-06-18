@@ -1,0 +1,29 @@
+{
+	"name": "tr_emp_autotablecreate",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase1",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"Tablename": {
+				"type": "string"
+			},
+			"Schamaname": {
+				"type": "string",
+				"defaultValue": "dbo"
+			}
+		},
+		"folder": {
+			"name": "Target"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "Employee"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

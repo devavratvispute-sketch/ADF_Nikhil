@@ -1,0 +1,17 @@
+{
+	"name": "AzureSqlDatabase4",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureSqlDatabase",
+		"typeProperties": {
+			"server": "sqlservernikhiljune26.database.windows.net",
+			"database": "Nikhil_DB",
+			"encrypt": "mandatory",
+			"trustServerCertificate": false,
+			"authenticationType": "SQL",
+			"userName": "sqlservernikhil",
+			"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIkRBVEFGQUNUT1JZQDlERTcxRTc1LTFBQzctNEE5Ny04NUZFLThDMzI4QkI0MTNFRV9kZjkxNTJjNC1mM2Q3LTRmMDYtYjM5NS01ZjI3Zjk1NzEyMWQiDQp9"
+		}
+	}
+}

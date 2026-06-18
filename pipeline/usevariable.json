@@ -1,0 +1,157 @@
+{
+	"name": "usevariable",
+	"properties": {
+		"activities": [
+			{
+				"name": "usevariable",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobStorageWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "src_emp_blob",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "tr_emp_blob",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "ReadCount",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "usevariable",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "ReadCount",
+					"value": {
+						"value": "@activity('usevariable').output.filesRead",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "ReadCount_copy1",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "usevariable",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "writecount",
+					"value": {
+						"value": "@activity('usevariable').output.filesWritten",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "final",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "ReadCount",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "ReadCount_copy1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "final",
+					"value": {
+						"value": "@equals(variables('ReadCount'),variables('writecount'))",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"variables": {
+			"ReadCount": {
+				"type": "Integer"
+			},
+			"writecount": {
+				"type": "Integer"
+			},
+			"final": {
+				"type": "Boolean"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2026-06-11T04:07:43Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

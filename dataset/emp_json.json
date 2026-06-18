@@ -1,0 +1,42 @@
+{
+	"name": "emp_json",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureDataLakeStorage1",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Source"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "employees.json",
+				"fileSystem": "gen2container"
+			}
+		},
+		"schema": {
+			"type": "object",
+			"properties": {
+				"EmpID": {
+					"type": "integer"
+				},
+				"EmpName": {
+					"type": "string"
+				},
+				"Department": {
+					"type": "string"
+				},
+				"Salary": {
+					"type": "integer"
+				},
+				"City": {
+					"type": "string"
+				}
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

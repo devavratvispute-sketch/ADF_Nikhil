@@ -1,0 +1,15 @@
+{
+	"name": "nikhiljune26datafacotry",
+	"properties": {
+		"trustModeClaimForMi": {
+			"value": "Disabled",
+			"editable": true
+		}
+	},
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "d13e19d4-f660-4271-b4ff-15873cdbe7e0",
+		"tenantId": "b2c9dd32-2202-46eb-addc-baf3a42e965f"
+	}
+}

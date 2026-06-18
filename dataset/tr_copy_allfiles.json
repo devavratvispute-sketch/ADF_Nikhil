@@ -1,0 +1,27 @@
+{
+	"name": "tr_copy_allfiles",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureBlobStorage1",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"Filename": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": {
+					"value": "@item().name",
+					"type": "Expression"
+				},
+				"container": "test"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

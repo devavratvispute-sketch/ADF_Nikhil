@@ -1,0 +1,41 @@
+{
+	"name": "Sample_DB_Withparameter",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureDataLakeStorage1",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"Filename": {
+				"type": "string"
+			},
+			"SheetIndex": {
+				"type": "int",
+				"defaultValue": 0
+			}
+		},
+		"folder": {
+			"name": "Source"
+		},
+		"annotations": [],
+		"type": "Excel",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().Filename",
+					"type": "Expression"
+				},
+				"folderPath": "Sample",
+				"fileSystem": "gen2container"
+			},
+			"sheetIndex": {
+				"value": "@dataset().SheetIndex",
+				"type": "Expression"
+			},
+			"firstRowAsHeader": true
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

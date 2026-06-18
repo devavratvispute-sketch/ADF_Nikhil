@@ -1,0 +1,43 @@
+{
+	"name": "src_gen2_excel",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureDataLakeStorage1",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Source"
+		},
+		"annotations": [],
+		"type": "Excel",
+		"typeProperties": {
+			"sheetName": "Sheet1",
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "cars.xls",
+				"folderPath": "Sample",
+				"fileSystem": "gen2container"
+			},
+			"firstRowAsHeader": true
+		},
+		"schema": [
+			{
+				"name": "MPG",
+				"type": "String"
+			},
+			{
+				"name": "CYL",
+				"type": "String"
+			},
+			{
+				"name": "ENG",
+				"type": "String"
+			},
+			{
+				"name": "WGT",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
