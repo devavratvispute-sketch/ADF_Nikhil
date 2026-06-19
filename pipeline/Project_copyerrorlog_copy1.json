@@ -1,5 +1,5 @@
 {
-	"name": "Project_copyerrorlog",
+	"name": "Project_copyerrorlog_copy1",
 	"properties": {
 		"activities": [
 			{
@@ -56,7 +56,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"on": {
-									"value": "@split(pipeline().parameters.FileName,'_')[0]",
+									"value": "@split(item().name,'_')[0]",
 									"type": "Expression"
 								},
 								"cases": [
@@ -172,7 +172,7 @@
 														"type": "DatasetReference",
 														"parameters": {
 															"Filename": {
-																"value": "@pipeline().parameters.FileName",
+																"value": "@item().name",
 																"type": "Expression"
 															}
 														}
@@ -222,10 +222,7 @@
 															"type": "String"
 														},
 														"FileName": {
-															"value": {
-																"value": "@pipeline().parameters.FileName",
-																"type": "Expression"
-															},
+															"value": "@item().name",
 															"type": "String"
 														},
 														"ModuleName": {
@@ -281,7 +278,7 @@
 														},
 														"FileName": {
 															"value": {
-																"value": "@pipeline().parameters.FileName",
+																"value": "@item().name",
 																"type": "Expression"
 															},
 															"type": "String"
@@ -341,7 +338,7 @@
 														},
 														"FileName": {
 															"value": {
-																"value": "@pipeline().parameters.FileName",
+																"value": "@item().name",
 																"type": "Expression"
 															},
 															"type": "String"
@@ -475,10 +472,7 @@
 														"referenceName": "src_switchinvoicecopywithparamter",
 														"type": "DatasetReference",
 														"parameters": {
-															"Filename": {
-																"value": "@pipeline().parameters.FileName",
-																"type": "Expression"
-															}
+															"Filename": "@item().name"
 														}
 													}
 												],
@@ -524,7 +518,7 @@
 														},
 														"FileName": {
 															"value": {
-																"value": "@pipeline().parameters.FileName",
+																"value": "@item().name",
 																"type": "Expression"
 															},
 															"type": "String"
@@ -583,10 +577,7 @@
 															"type": "String"
 														},
 														"FileName": {
-															"value": {
-																"value": "@pipeline().parameters.FileName",
-																"type": "Expression"
-															},
+															"value": "@item().name",
 															"type": "String"
 														},
 														"ModuleName": {
@@ -642,7 +633,7 @@
 														},
 														"FileName": {
 															"value": {
-																"value": "@pipeline().parameters.FileName",
+																"value": "@item().name",
 																"type": "Expression"
 															},
 															"type": "String"
@@ -780,7 +771,7 @@
 														"type": "DatasetReference",
 														"parameters": {
 															"Filename": {
-																"value": "@pipeline().parameters.FileName",
+																"value": "@item().name",
 																"type": "Expression"
 															}
 														}
@@ -830,11 +821,6 @@
 				}
 			}
 		],
-		"parameters": {
-			"FileName": {
-				"type": "string"
-			}
-		},
 		"variables": {
 			"FileName": {
 				"type": "String"
