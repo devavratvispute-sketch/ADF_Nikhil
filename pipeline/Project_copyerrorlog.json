@@ -93,6 +93,7 @@
 														"sqlWriterUseTableLock": false
 													},
 													"enableStaging": false,
+													"enableSkipIncompatibleRow": true,
 													"translator": {
 														"type": "TabularTranslator",
 														"mappings": [
@@ -396,6 +397,7 @@
 														"disableMetricsCollection": false
 													},
 													"enableStaging": false,
+													"enableSkipIncompatibleRow": true,
 													"translator": {
 														"type": "TabularTranslator",
 														"mappings": [
@@ -690,6 +692,7 @@
 														"sqlWriterUseTableLock": false
 													},
 													"enableStaging": false,
+													"enableSkipIncompatibleRow": true,
 													"translator": {
 														"type": "TabularTranslator",
 														"mappings": [
