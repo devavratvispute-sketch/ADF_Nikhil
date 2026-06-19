@@ -93,7 +93,8 @@
 														"sqlWriterUseTableLock": false
 													},
 													"enableStaging": false,
-													"enableSkipIncompatibleRow": true,
+													"enableSkipIncompatibleRow": false,
+													"validateDataConsistency": false,
 													"translator": {
 														"type": "TabularTranslator",
 														"mappings": [
@@ -397,7 +398,7 @@
 														"disableMetricsCollection": false
 													},
 													"enableStaging": false,
-													"enableSkipIncompatibleRow": true,
+													"enableSkipIncompatibleRow": false,
 													"translator": {
 														"type": "TabularTranslator",
 														"mappings": [
@@ -583,7 +584,7 @@
 															"type": "String"
 														},
 														"ModuleName": {
-															"value": "Invoice",
+															"value": "Account",
 															"type": "String"
 														},
 														"RecordsProcessed": {
@@ -641,7 +642,7 @@
 															"type": "String"
 														},
 														"ModuleName": {
-															"value": "Invoice",
+															"value": "Account",
 															"type": "String"
 														},
 														"RecordsProcessed": {
@@ -692,7 +693,7 @@
 														"sqlWriterUseTableLock": false
 													},
 													"enableStaging": false,
-													"enableSkipIncompatibleRow": true,
+													"enableSkipIncompatibleRow": false,
 													"translator": {
 														"type": "TabularTranslator",
 														"mappings": [
