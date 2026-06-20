@@ -24,6 +24,7 @@
 					],
 					"storeSettings": {
 						"type": "AzureBlobFSReadSettings",
+						"recursive": true,
 						"enablePartitionDiscovery": false
 					},
 					"formatSettings": {
@@ -224,7 +225,10 @@
 															"type": "String"
 														},
 														"FileName": {
-															"value": "@item().name",
+															"value": {
+																"value": "@item().name",
+																"type": "Expression"
+															},
 															"type": "String"
 														},
 														"ModuleName": {
@@ -305,6 +309,204 @@
 												"linkedServiceName": {
 													"referenceName": "AzureSqlDatabase1",
 													"type": "LinkedServiceReference"
+												}
+											},
+											{
+												"name": "Invoice_Copy_to_archive",
+												"type": "Copy",
+												"dependsOn": [
+													{
+														"activity": "Sp_Invociemaster_Success",
+														"dependencyConditions": [
+															"Succeeded"
+														]
+													}
+												],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"source": {
+														"type": "BinarySource",
+														"storeSettings": {
+															"type": "AzureBlobFSReadSettings",
+															"recursive": true,
+															"deleteFilesAfterCompletion": false
+														},
+														"formatSettings": {
+															"type": "BinaryReadSettings"
+														}
+													},
+													"sink": {
+														"type": "BinarySink",
+														"storeSettings": {
+															"type": "AzureBlobFSWriteSettings"
+														}
+													},
+													"enableStaging": false
+												},
+												"inputs": [
+													{
+														"referenceName": "DS_Binary_File",
+														"type": "DatasetReference",
+														"parameters": {
+															"Filename": {
+																"value": "@item().name",
+																"type": "Expression"
+															}
+														}
+													}
+												],
+												"outputs": [
+													{
+														"referenceName": "DS_Binary_Archive",
+														"type": "DatasetReference",
+														"parameters": {
+															"Filename": {
+																"value": "@item().name",
+																"type": "Expression"
+															}
+														}
+													}
+												]
+											},
+											{
+												"name": "Delete_Original_Invoice_Files",
+												"type": "Delete",
+												"dependsOn": [
+													{
+														"activity": "Invoice_Copy_to_archive",
+														"dependencyConditions": [
+															"Succeeded"
+														]
+													}
+												],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"dataset": {
+														"referenceName": "DS_Binary_File",
+														"type": "DatasetReference",
+														"parameters": {
+															"Filename": "@item().name"
+														}
+													},
+													"enableLogging": false,
+													"storeSettings": {
+														"type": "AzureBlobFSReadSettings",
+														"recursive": false,
+														"enablePartitionDiscovery": false
+													}
+												}
+											},
+											{
+												"name": "Invoice_Copy_to_Error",
+												"type": "Copy",
+												"dependsOn": [
+													{
+														"activity": "Sp_Invociemaster_Faillog",
+														"dependencyConditions": [
+															"Succeeded"
+														]
+													}
+												],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"source": {
+														"type": "BinarySource",
+														"storeSettings": {
+															"type": "AzureBlobFSReadSettings",
+															"recursive": true,
+															"deleteFilesAfterCompletion": false
+														},
+														"formatSettings": {
+															"type": "BinaryReadSettings"
+														}
+													},
+													"sink": {
+														"type": "BinarySink",
+														"storeSettings": {
+															"type": "AzureBlobFSWriteSettings"
+														}
+													},
+													"enableStaging": false
+												},
+												"inputs": [
+													{
+														"referenceName": "DS_Binary_File",
+														"type": "DatasetReference",
+														"parameters": {
+															"Filename": {
+																"value": "@item().name",
+																"type": "Expression"
+															}
+														}
+													}
+												],
+												"outputs": [
+													{
+														"referenceName": "DS_Binary_Archive",
+														"type": "DatasetReference",
+														"parameters": {
+															"Filename": {
+																"value": "@item().name",
+																"type": "Expression"
+															}
+														}
+													}
+												]
+											},
+											{
+												"name": "Delete_currept_Invoice_Files",
+												"type": "Delete",
+												"dependsOn": [
+													{
+														"activity": "Invoice_Copy_to_Error",
+														"dependencyConditions": [
+															"Succeeded"
+														]
+													}
+												],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"dataset": {
+														"referenceName": "DS_Binary_File",
+														"type": "DatasetReference",
+														"parameters": {
+															"Filename": "@item().name"
+														}
+													},
+													"enableLogging": false,
+													"storeSettings": {
+														"type": "AzureBlobFSReadSettings",
+														"recursive": false,
+														"enablePartitionDiscovery": false
+													}
 												}
 											}
 										]
@@ -547,6 +749,204 @@
 													"referenceName": "AzureSqlDatabase1",
 													"type": "LinkedServiceReference"
 												}
+											},
+											{
+												"name": "Invenory_Copy_to_archive",
+												"type": "Copy",
+												"dependsOn": [
+													{
+														"activity": "SP_Invenory_successlog",
+														"dependencyConditions": [
+															"Succeeded"
+														]
+													}
+												],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"source": {
+														"type": "BinarySource",
+														"storeSettings": {
+															"type": "AzureBlobFSReadSettings",
+															"recursive": true,
+															"deleteFilesAfterCompletion": false
+														},
+														"formatSettings": {
+															"type": "BinaryReadSettings"
+														}
+													},
+													"sink": {
+														"type": "BinarySink",
+														"storeSettings": {
+															"type": "AzureBlobFSWriteSettings"
+														}
+													},
+													"enableStaging": false
+												},
+												"inputs": [
+													{
+														"referenceName": "DS_Binary_File",
+														"type": "DatasetReference",
+														"parameters": {
+															"Filename": {
+																"value": "@item().name",
+																"type": "Expression"
+															}
+														}
+													}
+												],
+												"outputs": [
+													{
+														"referenceName": "DS_Binary_Archive",
+														"type": "DatasetReference",
+														"parameters": {
+															"Filename": {
+																"value": "@item().name",
+																"type": "Expression"
+															}
+														}
+													}
+												]
+											},
+											{
+												"name": "Delete_Original_Invenory_Files",
+												"type": "Delete",
+												"dependsOn": [
+													{
+														"activity": "Invenory_Copy_to_archive",
+														"dependencyConditions": [
+															"Succeeded"
+														]
+													}
+												],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"dataset": {
+														"referenceName": "DS_Binary_File",
+														"type": "DatasetReference",
+														"parameters": {
+															"Filename": "@item().name"
+														}
+													},
+													"enableLogging": false,
+													"storeSettings": {
+														"type": "AzureBlobFSReadSettings",
+														"recursive": false,
+														"enablePartitionDiscovery": false
+													}
+												}
+											},
+											{
+												"name": "Invenory_Copy_to_Error",
+												"type": "Copy",
+												"dependsOn": [
+													{
+														"activity": "SP_Invenory_Failurelog",
+														"dependencyConditions": [
+															"Succeeded"
+														]
+													}
+												],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"source": {
+														"type": "BinarySource",
+														"storeSettings": {
+															"type": "AzureBlobFSReadSettings",
+															"recursive": true,
+															"deleteFilesAfterCompletion": false
+														},
+														"formatSettings": {
+															"type": "BinaryReadSettings"
+														}
+													},
+													"sink": {
+														"type": "BinarySink",
+														"storeSettings": {
+															"type": "AzureBlobFSWriteSettings"
+														}
+													},
+													"enableStaging": false
+												},
+												"inputs": [
+													{
+														"referenceName": "DS_Binary_File",
+														"type": "DatasetReference",
+														"parameters": {
+															"Filename": {
+																"value": "@item().name",
+																"type": "Expression"
+															}
+														}
+													}
+												],
+												"outputs": [
+													{
+														"referenceName": "DS_Binary_Archive",
+														"type": "DatasetReference",
+														"parameters": {
+															"Filename": {
+																"value": "@item().name",
+																"type": "Expression"
+															}
+														}
+													}
+												]
+											},
+											{
+												"name": "Delete_currept_Invenory_Files",
+												"type": "Delete",
+												"dependsOn": [
+													{
+														"activity": "Invenory_Copy_to_Error",
+														"dependencyConditions": [
+															"Succeeded"
+														]
+													}
+												],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"dataset": {
+														"referenceName": "DS_Binary_File",
+														"type": "DatasetReference",
+														"parameters": {
+															"Filename": "@item().name"
+														}
+													},
+													"enableLogging": false,
+													"storeSettings": {
+														"type": "AzureBlobFSReadSettings",
+														"recursive": false,
+														"enablePartitionDiscovery": false
+													}
+												}
 											}
 										]
 									},
@@ -580,7 +980,10 @@
 															"type": "String"
 														},
 														"FileName": {
-															"value": "@item().name",
+															"value": {
+																"value": "@item().name",
+																"type": "Expression"
+															},
 															"type": "String"
 														},
 														"ModuleName": {
@@ -796,30 +1199,6 @@
 									}
 								]
 							}
-						},
-						{
-							"name": "Set variable1",
-							"type": "SetVariable",
-							"dependsOn": [
-								{
-									"activity": "GetModelWiseFiles",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
-							"policy": {
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"variableName": "ModuleName",
-								"value": {
-									"value": "@item().name",
-									"type": "Expression"
-								}
-							}
 						}
 					]
 				}
@@ -833,6 +1212,9 @@
 				"type": "String"
 			},
 			"ModuleName": {
+				"type": "String"
+			},
+			"Successfilename": {
 				"type": "String"
 			}
 		},
