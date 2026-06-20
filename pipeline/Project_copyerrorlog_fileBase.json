@@ -1,5 +1,5 @@
 {
-	"name": "Project_copyerrorlog",
+	"name": "Project_copyerrorlog_fileBase",
 	"properties": {
 		"activities": [
 			{
@@ -463,13 +463,10 @@
 												],
 												"outputs": [
 													{
-														"referenceName": "DS_Binary_Archive",
+														"referenceName": "DS_Binary_Error",
 														"type": "DatasetReference",
 														"parameters": {
-															"Filename": {
-																"value": "@item().name",
-																"type": "Expression"
-															}
+															"Filename": "@item().name"
 														}
 													}
 												]
@@ -902,7 +899,7 @@
 												],
 												"outputs": [
 													{
-														"referenceName": "DS_Binary_Archive",
+														"referenceName": "DS_Binary_Error",
 														"type": "DatasetReference",
 														"parameters": {
 															"Filename": {
@@ -1347,13 +1344,10 @@
 												],
 												"outputs": [
 													{
-														"referenceName": "DS_Binary_Archive",
+														"referenceName": "DS_Binary_Error",
 														"type": "DatasetReference",
 														"parameters": {
-															"Filename": {
-																"value": "@item().name",
-																"type": "Expression"
-															}
+															"Filename": "@item().name"
 														}
 													}
 												]
