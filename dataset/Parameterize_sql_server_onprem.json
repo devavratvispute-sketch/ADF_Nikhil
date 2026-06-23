@@ -1,0 +1,54 @@
+{
+	"name": "Parameterize_sql_server_onprem",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Parameterize_sql_server_omprem",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"Servername": {
+					"value": "@dataset().servername",
+					"type": "Expression"
+				},
+				"databasename": {
+					"value": "@dataset().databasename",
+					"type": "Expression"
+				},
+				"username": {
+					"value": "@dataset().username",
+					"type": "Expression"
+				},
+				"password": {
+					"value": "@dataset().password",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"servername": {
+				"type": "string"
+			},
+			"databasename": {
+				"type": "string"
+			},
+			"username": {
+				"type": "string"
+			},
+			"password": {
+				"type": "string"
+			},
+			"tablename": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "SqlServerTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": {
+				"value": "@dataset().tablename",
+				"type": "Expression"
+			}
+		}
+	}
+}

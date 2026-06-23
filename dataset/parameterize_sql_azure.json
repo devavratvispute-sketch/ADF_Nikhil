@@ -1,0 +1,54 @@
+{
+	"name": "parameterize_sql_azure",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Azure_sql_parameterize",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"servername": {
+					"value": "@dataset().Servername",
+					"type": "Expression"
+				},
+				"databasename": {
+					"value": "@dataset().databasename",
+					"type": "Expression"
+				},
+				"username": {
+					"value": "@dataset().username",
+					"type": "Expression"
+				},
+				"password": {
+					"value": "@dataset().password",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"Servername": {
+				"type": "string"
+			},
+			"databasename": {
+				"type": "string"
+			},
+			"username": {
+				"type": "string"
+			},
+			"password": {
+				"type": "string"
+			},
+			"table": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": {
+				"value": "@dataset().table",
+				"type": "Expression"
+			}
+		}
+	}
+}
