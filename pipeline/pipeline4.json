@@ -1,0 +1,186 @@
+{
+	"name": "pipeline4",
+	"properties": {
+		"activities": [
+			{
+				"name": "LowerBound",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "select LastLoadDate from watermark_table where tablename='Customer_Source'",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "parameterize_sql_azure",
+						"type": "DatasetReference",
+						"parameters": {
+							"Servername": "sqlservernikhiljune26.database.windows.net",
+							"databasename": "Nikhil_DB",
+							"username": "sqlservernikhil",
+							"password": "Nikhil@13156",
+							"table": "watermark_table"
+						}
+					}
+				}
+			},
+			{
+				"name": "Copy data1",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "UpperBound",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": {
+							"value": "SELECT *\nFROM dbo.Customer_Source\nWHERE LastModifiedDate > '@{activity('LowerBound').output.firstRow.LastLoadDate}'\nAND LastModifiedDate <= '@{variables('UpperBound')}'",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "Parameterize_sql_server_onprem",
+						"type": "DatasetReference",
+						"parameters": {
+							"servername": "DESKTOP-N4U5EV1\\SQLEXPRESS",
+							"databasename": "ADF_DB",
+							"username": "sa",
+							"password": "Sakon@12345",
+							"tablename": "Customer_source"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "parameterize_sql_azure",
+						"type": "DatasetReference",
+						"parameters": {
+							"Servername": "sqlservernikhiljune26.database.windows.net",
+							"databasename": "Nikhil_DB",
+							"username": "sqlservernikhil",
+							"password": "Nikhil@13156",
+							"table": "Customer_target"
+						}
+					}
+				]
+			},
+			{
+				"name": "UpperBound",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "LowerBound",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "UpperBound",
+					"value": {
+						"value": "@formatDateTime(utcNow(),'yyyy-MM-dd HH:mm:ss')",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Stored procedure1",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Copy data1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[sp_UpdateWatermark]",
+					"storedProcedureParameters": {
+						"LastLoadDate": {
+							"value": "",
+							"type": "DateTime"
+						},
+						"TableName": {
+							"value": "Customer_Source",
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "Azure_sql_parameterize",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"servername": "sqlservernikhiljune26.database.windows.net",
+						"databasename": "Nikhil_DB",
+						"username": "sqlservernikhil",
+						"password": "Nikhil@13156"
+					}
+				}
+			}
+		],
+		"variables": {
+			"datetime": {
+				"type": "String"
+			},
+			"UpperBound": {
+				"type": "String"
+			}
+		},
+		"annotations": []
+	}
+}
