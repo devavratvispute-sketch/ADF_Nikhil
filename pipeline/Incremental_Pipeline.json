@@ -87,6 +87,40 @@
 						"type": "DatasetReference"
 					}
 				]
+			},
+			{
+				"name": "Web1",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Copy data1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "POST",
+					"headers": {
+						"Header": {
+							"value": "Urgent: Azure Data Factory Pipeline Failure Notification",
+							"type": "Expression"
+						}
+					},
+					"url": "https://prod-04.northcentralus.logic.azure.com:443/workflows/4878379ace11448e867c4a1f6aacbcb8/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=wk_5I0v_Ui4ei9jlnIeja5h1EfB6UrN9qm0oJbzP4t0",
+					"body": {
+						"value": "{\n    \"PipelineName\":\"@{pipeline().Pipeline}\",\n    \"ErrorMessage\":\"@{activity('Copy data1').Status}\",\n    \"DataFactoryName\":\"@{pipeline().DataFactory}\",\n    \"Runid\":\"@{pipeline().RunId}\"\n}\n",
+						"type": "Expression"
+					}
+				}
 			}
 		],
 		"annotations": [],
