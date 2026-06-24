@@ -111,7 +111,7 @@
 					"method": "POST",
 					"headers": {
 						"Header": {
-							"value": "Urgent: Azure Data Factory Pipeline Failure Notification",
+							"value": "ADF Pipeline - pipeline().Pipeline",
 							"type": "Expression"
 						}
 					},
