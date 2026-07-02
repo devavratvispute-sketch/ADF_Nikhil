@@ -1,0 +1,17 @@
+{
+	"name": "LS_SQLServer_retail",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_SQLServer_retail",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"TableName": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "SqlServerTable",
+		"schema": []
+	}
+}
