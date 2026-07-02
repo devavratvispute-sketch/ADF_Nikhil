@@ -1,0 +1,66 @@
+{
+	"name": "DS_SQL_Metadata_retail",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_SQLServer_retail",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SqlServerTable",
+		"schema": [
+			{
+				"name": "ConfigID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "SourceType",
+				"type": "varchar"
+			},
+			{
+				"name": "SourceSchema",
+				"type": "varchar"
+			},
+			{
+				"name": "SourceObject",
+				"type": "varchar"
+			},
+			{
+				"name": "SourceContainer",
+				"type": "varchar"
+			},
+			{
+				"name": "SourceFolder",
+				"type": "varchar"
+			},
+			{
+				"name": "FileName",
+				"type": "varchar"
+			},
+			{
+				"name": "TargetContainer",
+				"type": "varchar"
+			},
+			{
+				"name": "TargetFolder",
+				"type": "varchar"
+			},
+			{
+				"name": "FileFormat",
+				"type": "varchar"
+			},
+			{
+				"name": "IsActive",
+				"type": "bit"
+			},
+			{
+				"name": "LoadType",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "Metadata_Config"
+		}
+	}
+}

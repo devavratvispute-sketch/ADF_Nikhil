@@ -1,5 +1,5 @@
 {
-	"name": "LS_SQLServer_retail",
+	"name": "ds_SQLServer_retail",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "LS_SQLServer_retail",
@@ -12,6 +12,13 @@
 		},
 		"annotations": [],
 		"type": "SqlServerTable",
-		"schema": []
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": {
+				"value": "@dataset().TableName",
+				"type": "Expression"
+			}
+		}
 	}
 }
