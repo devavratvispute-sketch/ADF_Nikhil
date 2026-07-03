@@ -1,0 +1,12 @@
+{
+	"name": "sqlAzure_parameter",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "sqlazure_parameter",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": []
+	}
+}

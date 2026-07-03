@@ -1,0 +1,113 @@
+{
+	"name": "PL_Invoice_Process",
+	"properties": {
+		"activities": [
+			{
+				"name": "Web_AnalyzeInvoice",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "POST",
+					"headers": {
+						"Ocp-Apim-Subscription-Key": "test",
+						"Content-Type": "application/json"
+					},
+					"url": "https://nikhilpdfreader.cognitiveservices.azure.com/documentintelligence/documentModels/prebuilt-invoice:analyze?api-version=2024-11-30",
+					"body": {
+						"value": "{\n  \"urlSource\": \"https://gen2storagejune26.blob.core.windows.net/invoice-json/Invoices/InvoiceNumber.pdf?sp=r&st=2026-06-25T05:04:10Z&se=2026-06-25T13:19:10Z&spr=https&sv=2026-02-06&sr=b&sig=MBokyMmUPky6S0mbq5O1U492NMav%2FxxfnvcGm5khHA0%3D\"\n}",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Web1",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Web_AnalyzeInvoice",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "GET",
+					"headers": {
+						"Ocp-Apim-Subscription-Key": "test"
+					},
+					"url": {
+						"value": "@activity('Web_AnalyzeInvoice').output.ADFWebActivityResponseHeaders['Operation-Location']",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Stored procedure1",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Web1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[sp_InsertInvoice]",
+					"storedProcedureParameters": {
+						"CustomerName": {
+							"value": {
+								"value": "@activity('Web1').output.analyzeResult.documents[0].fields.CustomerName.valueString",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"InvoiceDate": {
+							"value": {
+								"value": "@activity('Web1').output.analyzeResult.documents[0].fields.InvoiceDate.valueDate",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"InvoiceNo": {
+							"value": {
+								"value": "@activity('Web1').output.analyzeResult.documents[0].fields.InvoiceId.valueString",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"annotations": []
+	}
+}

@@ -1,0 +1,35 @@
+{
+	"name": "sqlazure_parameter",
+	"properties": {
+		"parameters": {
+			"Username": {
+				"type": "string"
+			},
+			"Databasename": {
+				"type": "string"
+			},
+			"Tablename": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "AzureSqlDatabase",
+		"typeProperties": {
+			"server": "sqlservernikhiljune26.database.windows.net",
+			"database": "@{linkedService().Databasename}",
+			"encrypt": "mandatory",
+			"trustServerCertificate": true,
+			"authenticationType": "SQL",
+			"userName": "@{linkedService().Username}",
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzureKeyVault1",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "Sqlserver-Azure"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/linkedservices"
+}
