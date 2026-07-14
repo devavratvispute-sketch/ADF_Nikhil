@@ -1,0 +1,45 @@
+{
+	"name": "Parquet1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureDataLakeStorage2",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "bronze",
+				"fileSystem": "telecom-data"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": [
+			{
+				"name": "AccountID",
+				"type": "INT_32"
+			},
+			{
+				"name": "MobileNumber",
+				"type": "INT_64"
+			},
+			{
+				"name": "EmployeeID",
+				"type": "INT_32"
+			},
+			{
+				"name": "CostCenterID",
+				"type": "INT_32"
+			},
+			{
+				"name": "VendorID",
+				"type": "INT_32"
+			},
+			{
+				"name": "Status",
+				"type": "UTF8"
+			}
+		]
+	}
+}

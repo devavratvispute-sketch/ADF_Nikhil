@@ -1,0 +1,69 @@
+{
+	"name": "AzureSqlTable3",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase_july",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "OrderID",
+				"type": "nvarchar"
+			},
+			{
+				"name": "OrderDate",
+				"type": "nvarchar"
+			},
+			{
+				"name": "CustomerID",
+				"type": "nvarchar"
+			},
+			{
+				"name": "CustomerName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "CustomerEmail",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Country",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ProductID",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ProductCategory",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ProductName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Quantity",
+				"type": "nvarchar"
+			},
+			{
+				"name": "UnitPrice",
+				"type": "nvarchar"
+			},
+			{
+				"name": "TotalPrice",
+				"type": "nvarchar"
+			},
+			{
+				"name": "SalesRegion",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "BuyAnything"
+		}
+	}
+}
