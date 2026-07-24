@@ -1,0 +1,15 @@
+{
+	"name": "NikhilADF2026",
+	"properties": {
+		"trustModeClaimForMi": {
+			"value": "Disabled",
+			"editable": true
+		}
+	},
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "2e703d4e-4303-4257-addc-33cf4248514a",
+		"tenantId": "3b7508d7-eb5f-47aa-becb-246a1a7800f8"
+	}
+}
