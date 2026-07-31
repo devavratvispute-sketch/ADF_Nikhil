@@ -65,11 +65,11 @@
 									"parameters": {
 										"ContrainerName": "landing",
 										"FolderName": {
-											"value": "string('')",
+											"value": "@item().SourcePath",
 											"type": "Expression"
 										},
 										"FileName": {
-											"value": "string('')",
+											"value": "string(\"\")",
 											"type": "Expression"
 										}
 									}
