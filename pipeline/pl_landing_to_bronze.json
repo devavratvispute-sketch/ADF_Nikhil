@@ -17,12 +17,11 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "SELECT VendorID, VendorName, ClientFolder, SourcePath, TargetPath, FileType, ProcessType \nFROM ControlTable \nWHERE Active = 1;",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
 					"dataset": {
-						"referenceName": "ds_azure_sql_sink",
+						"referenceName": "ds_source_sql",
 						"type": "DatasetReference"
 					},
 					"firstRowOnly": false
@@ -60,18 +59,14 @@
 							"userProperties": [],
 							"typeProperties": {
 								"dataset": {
-									"referenceName": "ds_binary_source_all",
+									"referenceName": "ds_binary_source",
 									"type": "DatasetReference",
 									"parameters": {
-										"ContrainerName": "landing",
-										"FolderName": {
-											"value": "@item().SourcePath",
+										"ContainerName": {
+											"value": "landing",
 											"type": "Expression"
 										},
-										"FileName": {
-											"value": "string(\"\")",
-											"type": "Expression"
-										}
+										"FolderPath": "@substring(item().SourcePath, 1, sub(length(item().SourcePath), 2))"
 									}
 								},
 								"fieldList": [
@@ -87,6 +82,36 @@
 							}
 						}
 					]
+				}
+			},
+			{
+				"name": "Execute Pipeline1",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "ForEach1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_copy_folder_files",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"VendorName": "@item().VendorName",
+						"ClientFolder": "@item().ClientFolder",
+						"SourcePath": "@item().SourcePath",
+						"TargetPath": "@item().TargetPath",
+						"FileType": "@item().FileType"
+					}
 				}
 			}
 		],
