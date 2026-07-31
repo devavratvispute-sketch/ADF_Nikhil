@@ -1,0 +1,30 @@
+{
+	"name": "ds_binary_source_all",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_tem",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"ContrainerName": {
+				"type": "string"
+			},
+			"FolderName": {
+				"type": "string"
+			},
+			"FileName": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "Source"
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation"
+			}
+		}
+	}
+}
