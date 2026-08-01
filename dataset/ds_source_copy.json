@@ -1,0 +1,28 @@
+{
+	"name": "ds_source_copy",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_tem",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"FolderPath": {
+				"type": "string"
+			},
+			"Filename": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "Source"
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileSystem": "landing"
+			}
+		}
+	}
+}
