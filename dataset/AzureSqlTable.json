@@ -1,0 +1,123 @@
+{
+	"name": "AzureSqlTable",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Source"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "extract_name",
+				"type": "varchar"
+			},
+			{
+				"name": "extract_type",
+				"type": "varchar"
+			},
+			{
+				"name": "source_schema",
+				"type": "varchar"
+			},
+			{
+				"name": "source_table",
+				"type": "varchar"
+			},
+			{
+				"name": "source_db_name",
+				"type": "varchar"
+			},
+			{
+				"name": "source_server",
+				"type": "varchar"
+			},
+			{
+				"name": "source_username",
+				"type": "varchar"
+			},
+			{
+				"name": "source_password",
+				"type": "varchar"
+			},
+			{
+				"name": "extract_container",
+				"type": "varchar"
+			},
+			{
+				"name": "extract_path",
+				"type": "varchar"
+			},
+			{
+				"name": "extract_file_type",
+				"type": "varchar"
+			},
+			{
+				"name": "extract_delimiter",
+				"type": "char"
+			},
+			{
+				"name": "extract_frequency",
+				"type": "varchar"
+			},
+			{
+				"name": "extract_load_type",
+				"type": "varchar"
+			},
+			{
+				"name": "target_container",
+				"type": "varchar"
+			},
+			{
+				"name": "target_path",
+				"type": "varchar"
+			},
+			{
+				"name": "extract_water_mark",
+				"type": "varchar"
+			},
+			{
+				"name": "extract_hwm",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "is_active",
+				"type": "bit"
+			},
+			{
+				"name": "created_by",
+				"type": "varchar"
+			},
+			{
+				"name": "created_timestamp",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "modified_by",
+				"type": "varchar"
+			},
+			{
+				"name": "modified_timestamp",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "ControlTable_config"
+		}
+	}
+}
