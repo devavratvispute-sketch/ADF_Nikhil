@@ -1,0 +1,47 @@
+{
+	"name": "ds_source_all",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_tem",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileSystem": "landing"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "AccountNumber",
+				"type": "String"
+			},
+			{
+				"name": "ClientName",
+				"type": "String"
+			},
+			{
+				"name": "VendorName",
+				"type": "String"
+			},
+			{
+				"name": "BillingLocation",
+				"type": "String"
+			},
+			{
+				"name": "AccountType",
+				"type": "String"
+			},
+			{
+				"name": "AccountStatus",
+				"type": "String"
+			}
+		]
+	}
+}
