@@ -44,6 +44,7 @@
 						"value": "@activity('getcontroltable').output.value",
 						"type": "Expression"
 					},
+					"isSequential": false,
 					"activities": [
 						{
 							"name": "Get Metadata1",
@@ -80,38 +81,38 @@
 									"type": "BinaryReadSettings"
 								}
 							}
+						},
+						{
+							"name": "Execute Pipeline1",
+							"type": "ExecutePipeline",
+							"dependsOn": [
+								{
+									"activity": "Get Metadata1",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "pl_copy_folder_files",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"VendorName": "@item().VendorName",
+									"ClientFolder": "@item().ClientFolder",
+									"SourcePath": "@item().SourcePath",
+									"TargetPath": "@item().TargetPath",
+									"FileType": "@item().FileType"
+								}
+							}
 						}
 					]
-				}
-			},
-			{
-				"name": "Execute Pipeline1",
-				"type": "ExecutePipeline",
-				"dependsOn": [
-					{
-						"activity": "ForEach1",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"pipeline": {
-						"referenceName": "pl_copy_folder_files",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true,
-					"parameters": {
-						"VendorName": "@item().VendorName",
-						"ClientFolder": "@item().ClientFolder",
-						"SourcePath": "@item().SourcePath",
-						"TargetPath": "@item().TargetPath",
-						"FileType": "@item().FileType"
-					}
 				}
 			}
 		],
