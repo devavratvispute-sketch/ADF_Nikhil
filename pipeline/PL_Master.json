@@ -71,7 +71,8 @@
 									"extract_path": "@item().extract_path",
 									"target_container": "@item().target_container",
 									"target_path": "@item().target_path",
-									"extract_load_type": "@item().extract_load_type"
+									"extract_load_type": "@item().extract_load_type",
+									"extract_id": "@item().id"
 								}
 							}
 						}
