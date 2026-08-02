@@ -27,7 +27,14 @@
 						{
 							"name": "Copy_Landing_To_Bronze",
 							"type": "Copy",
-							"dependsOn": [],
+							"dependsOn": [
+								{
+									"activity": "SP_Insert_Audit",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
 							"policy": {
 								"timeout": "0.12:00:00",
 								"retry": 0,
@@ -97,12 +104,151 @@
 										"Container": "@pipeline().parameters.target_container",
 										"FolderPath": "@pipeline().parameters.target_path",
 										"FileName": {
-											"value": "@concat(pipeline().parameters.extract_name,'.csv')",
+											"value": "@concat(\n    pipeline().parameters.extract_name,\n    '_',\n    formatDateTime(utcNow(),'yyyyMMddHHmmss'),\n    '.csv'\n)",
 											"type": "Expression"
 										}
 									}
 								}
 							]
+						},
+						{
+							"name": "SP_Insert_Audit",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": "[dbo].[usp_Insert_Audit]",
+								"storedProcedureParameters": {
+									"extract_id": {
+										"value": "@pipeline().parameters.extract_id",
+										"type": "Int32"
+									},
+									"run_id": {
+										"value": "@pipeline().RunId",
+										"type": "String"
+									},
+									"status": {
+										"value": "Started",
+										"type": "String"
+									}
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "AzureSqlDatabase",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"name": "SP_Update_Audit",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [
+								{
+									"activity": "Copy_Landing_To_Bronze",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": "[dbo].[usp_Update_Audit]",
+								"storedProcedureParameters": {
+									"error_message": {
+										"value": "NULL",
+										"type": "String"
+									},
+									"run_id": {
+										"value": "@pipeline().RunId",
+										"type": "String"
+									},
+									"source_count": {
+										"value": "0",
+										"type": "Int32"
+									},
+									"status": {
+										"value": "SUCCESS",
+										"type": "String"
+									},
+									"target_count": {
+										"value": "0",
+										"type": "Int32"
+									}
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "AzureSqlDatabase",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"name": "SP_Insert_Error",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [
+								{
+									"activity": "Copy_Landing_To_Bronze",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": "[dbo].[usp_Insert_Error]",
+								"storedProcedureParameters": {
+									"activity_name": {
+										"value": "Copy_Landing_To_Bronze",
+										"type": "String"
+									},
+									"error_code": {
+										"value": {
+											"value": "NULL",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"error_message": {
+										"value": "@activity('Copy_Landing_To_Bronze').Error.Message",
+										"type": "String"
+									},
+									"extract_id": {
+										"value": "@pipeline().parameters.extract_id",
+										"type": "Int32"
+									},
+									"pipeline_name": {
+										"value": "@pipeline().Pipeline",
+										"type": "String"
+									},
+									"run_id": {
+										"value": "@pipeline().RunId",
+										"type": "String"
+									}
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "AzureSqlDatabase",
+								"type": "LinkedServiceReference"
+							}
 						}
 					]
 				}
@@ -129,6 +275,9 @@
 			},
 			"extract_load_type": {
 				"type": "string"
+			},
+			"extract_id": {
+				"type": "int"
 			}
 		},
 		"annotations": []
