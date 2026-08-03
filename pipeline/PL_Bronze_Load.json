@@ -354,13 +354,19 @@
 							"typeProperties": {
 								"source": {
 									"type": "AzureSqlSource",
+									"sqlReaderQuery": "SELECT last_watermark\nFROM dbo.Watermark_Table\nWHERE extract_id = @{pipeline().parameters.extract_id}",
 									"queryTimeout": "02:00:00",
 									"partitionOption": "None"
 								},
 								"dataset": {
 									"referenceName": "AzureSqlTable",
-									"type": "DatasetReference"
-								}
+									"type": "DatasetReference",
+									"parameters": {
+										"SchemaName": "dbo",
+										"TableName": "Watermark_Table"
+									}
+								},
+								"firstRowOnly": false
 							}
 						}
 					],
