@@ -5,7 +5,7 @@
 		"type": "SqlServer",
 		"typeProperties": {
 			"server": "DESKTOP-N4U5EV1\\SQLEXPRESS",
-			"database": "ADF_DB",
+			"database": "SalesDB",
 			"encrypt": "mandatory",
 			"trustServerCertificate": true,
 			"authenticationType": "SQL",
