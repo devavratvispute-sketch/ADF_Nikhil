@@ -14,11 +14,11 @@
 					},
 					"ifFalseActivities": [
 						{
-							"name": "Copy_Landing_To_Bronze_copy1",
+							"name": "Copy_Landing_To_Bronze",
 							"type": "Copy",
 							"dependsOn": [
 								{
-									"activity": "SP_Insert_Audit_copy1",
+									"activity": "Lookup1",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -35,10 +35,6 @@
 							"typeProperties": {
 								"source": {
 									"type": "SqlServerSource",
-									"sqlReaderQuery": {
-										"value": "@concat(\n'SELECT * FROM dbo.Products WHERE ModifiedDate > ''',\nactivity('Lookup_Last_Watermark').output.firstRow.last_watermark,\n''''\n)",
-										"type": "Expression"
-									},
 									"queryTimeout": "02:00:00",
 									"partitionOption": "None"
 								},
@@ -95,11 +91,11 @@
 							]
 						},
 						{
-							"name": "SP_Insert_Audit_copy1",
+							"name": "SP_Insert_Audit_copy3",
 							"type": "SqlServerStoredProcedure",
 							"dependsOn": [
 								{
-									"activity": "Lookup_Last_Watermark",
+									"activity": "Copy_Landing_To_Bronze",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -117,73 +113,33 @@
 								"storedProcedureName": "[dbo].[usp_Insert_Audit]",
 								"storedProcedureParameters": {
 									"extract_id": {
-										"value": {
-											"value": "@pipeline().parameters.extract_id",
-											"type": "Expression"
-										},
+										"value": "@pipeline().parameters.extract_id",
 										"type": "Int32"
 									},
-									"run_id": {
-										"value": {
-											"value": "@pipeline().parameters.extract_id",
-											"type": "Expression"
-										},
-										"type": "String"
-									},
-									"status": {
-										"value": "Started",
-										"type": "String"
-									}
-								}
-							},
-							"linkedServiceName": {
-								"referenceName": "AzureSqlDatabase",
-								"type": "LinkedServiceReference"
-							}
-						},
-						{
-							"name": "SP_Update_Audit_copy1",
-							"type": "SqlServerStoredProcedure",
-							"dependsOn": [
-								{
-									"activity": "Copy_Landing_To_Bronze_copy1",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
-							"policy": {
-								"timeout": "0.12:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"storedProcedureName": "[dbo].[usp_Update_Audit]",
-								"storedProcedureParameters": {
-									"error_message": {
-										"value": "NULL",
-										"type": "String"
-									},
-									"run_id": {
-										"value": {
-											"value": "@pipeline().RunId",
-											"type": "Expression"
-										},
-										"type": "String"
-									},
-									"source_count": {
+									"file_size": {
 										"value": "0",
 										"type": "Int32"
 									},
+									"run_id": {
+										"value": "@pipeline().parameters.extract_id",
+										"type": "String"
+									},
+									"Source_count": {
+										"value": {
+											"value": "@activity('Copy_Landing_To_Bronze').output.rowsRead",
+											"type": "Expression"
+										},
+										"type": "Int32"
+									},
 									"status": {
-										"value": "SUCCESS",
+										"value": "Success",
 										"type": "String"
 									},
 									"target_count": {
-										"value": "0",
+										"value": {
+											"value": "@activity('Copy_Landing_To_Bronze').output.rowsCopied",
+											"type": "Expression"
+										},
 										"type": "Int32"
 									}
 								}
@@ -194,11 +150,11 @@
 							}
 						},
 						{
-							"name": "SP_Insert_Error_copy1",
+							"name": "SP_Insert_Error_copy3",
 							"type": "SqlServerStoredProcedure",
 							"dependsOn": [
 								{
-									"activity": "Wait2_copy1",
+									"activity": "Wait2_copy3",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -262,11 +218,11 @@
 							}
 						},
 						{
-							"name": "Wait2_copy1",
+							"name": "Wait2_copy3",
 							"type": "Wait",
 							"dependsOn": [
 								{
-									"activity": "Copy_Landing_To_Bronze_copy1",
+									"activity": "Copy_Landing_To_Bronze",
 									"dependencyConditions": [
 										"Failed"
 									]
@@ -278,73 +234,7 @@
 							}
 						},
 						{
-							"name": "Success_copy1",
-							"type": "WebActivity",
-							"dependsOn": [
-								{
-									"activity": "SP_Update_Audit_copy1",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
-							"policy": {
-								"timeout": "0.12:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"method": "POST",
-								"headers": {
-									"Content-Type": "application/json"
-								},
-								"url": "https://prod-28.northcentralus.logic.azure.com:443/workflows/7b4db3a9950e444b86f522d96d095371/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=XNEWis6fL5ytnd40jPZxzffgzXdOm98SN_Xj9_uyDa8",
-								"body": {
-									"PipelineName": "@{pipeline().Pipeline}",
-									"Status": "Success",
-									"FileName": "@{pipeline().parameters.extract_name}",
-									"Message": "Landing to Bronze completed successfully"
-								}
-							}
-						},
-						{
-							"name": "Failure_copy1",
-							"type": "WebActivity",
-							"dependsOn": [
-								{
-									"activity": "SP_Insert_Error_copy1",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
-							"policy": {
-								"timeout": "0.12:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"method": "POST",
-								"headers": {
-									"Content-Type": "application/json"
-								},
-								"url": "https://prod-28.northcentralus.logic.azure.com:443/workflows/7b4db3a9950e444b86f522d96d095371/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=XNEWis6fL5ytnd40jPZxzffgzXdOm98SN_Xj9_uyDa8",
-								"body": {
-									"PipelineName": "@{pipeline().Pipeline}",
-									"Status": "Failed",
-									"FileName": "@{pipeline().parameters.extract_name}",
-									"Message": "Landing to Bronze copy failed"
-								}
-							}
-						},
-						{
-							"name": "Lookup_Last_Watermark",
+							"name": "Lookup1",
 							"type": "Lookup",
 							"dependsOn": [],
 							"policy": {
@@ -358,7 +248,7 @@
 							"typeProperties": {
 								"source": {
 									"type": "AzureSqlSource",
-									"sqlReaderQuery": "SELECT last_watermark\nFROM dbo.Watermark_Table\nWHERE extract_id = @{pipeline().parameters.extract_id}",
+									"sqlReaderQuery": "select last_watermark from Watermark_Table",
 									"queryTimeout": "02:00:00",
 									"partitionOption": "None"
 								},
@@ -369,23 +259,15 @@
 										"SchemaName": "dbo",
 										"TableName": "Watermark_Table"
 									}
-								},
-								"firstRowOnly": false
+								}
 							}
 						}
 					],
 					"ifTrueActivities": [
 						{
-							"name": "Copy_Landing_To_Bronze",
+							"name": "Copy_Landing_To_Bronze_File",
 							"type": "Copy",
-							"dependsOn": [
-								{
-									"activity": "SP_Insert_Audit",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
+							"dependsOn": [],
 							"policy": {
 								"timeout": "0.12:00:00",
 								"retry": 0,
@@ -465,49 +347,9 @@
 						{
 							"name": "SP_Insert_Audit",
 							"type": "SqlServerStoredProcedure",
-							"dependsOn": [],
-							"policy": {
-								"timeout": "0.12:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"storedProcedureName": "[dbo].[usp_Insert_Audit]",
-								"storedProcedureParameters": {
-									"extract_id": {
-										"value": {
-											"value": "@pipeline().parameters.extract_id",
-											"type": "Expression"
-										},
-										"type": "Int32"
-									},
-									"run_id": {
-										"value": {
-											"value": "@pipeline().parameters.extract_id",
-											"type": "Expression"
-										},
-										"type": "String"
-									},
-									"status": {
-										"value": "Started",
-										"type": "String"
-									}
-								}
-							},
-							"linkedServiceName": {
-								"referenceName": "AzureSqlDatabase",
-								"type": "LinkedServiceReference"
-							}
-						},
-						{
-							"name": "SP_Update_Audit",
-							"type": "SqlServerStoredProcedure",
 							"dependsOn": [
 								{
-									"activity": "Copy_Landing_To_Bronze",
+									"activity": "Copy_Landing_To_Bronze_File",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -522,29 +364,36 @@
 							},
 							"userProperties": [],
 							"typeProperties": {
-								"storedProcedureName": "[dbo].[usp_Update_Audit]",
+								"storedProcedureName": "[dbo].[usp_Insert_Audit]",
 								"storedProcedureParameters": {
-									"error_message": {
-										"value": "NULL",
-										"type": "String"
+									"extract_id": {
+										"value": "@pipeline().parameters.extract_id",
+										"type": "Int32"
 									},
-									"run_id": {
-										"value": {
-											"value": "@pipeline().RunId",
-											"type": "Expression"
-										},
-										"type": "String"
-									},
-									"source_count": {
+									"file_size": {
 										"value": "0",
 										"type": "Int32"
 									},
+									"run_id": {
+										"value": "@pipeline().parameters.extract_id",
+										"type": "String"
+									},
+									"Source_count": {
+										"value": {
+											"value": "@activity('Copy_Landing_To_Bronze_File').output.dataRead\n",
+											"type": "Expression"
+										},
+										"type": "Int32"
+									},
 									"status": {
-										"value": "SUCCESS",
+										"value": "Success",
 										"type": "String"
 									},
 									"target_count": {
-										"value": "0",
+										"value": {
+											"value": "@activity('Copy_Landing_To_Bronze_File').output.dataWritten",
+											"type": "Expression"
+										},
 										"type": "Int32"
 									}
 								}
@@ -627,7 +476,7 @@
 							"type": "Wait",
 							"dependsOn": [
 								{
-									"activity": "Copy_Landing_To_Bronze",
+									"activity": "Copy_Landing_To_Bronze_File",
 									"dependencyConditions": [
 										"Failed"
 									]
@@ -641,14 +490,9 @@
 						{
 							"name": "Success",
 							"type": "WebActivity",
-							"dependsOn": [
-								{
-									"activity": "SP_Update_Audit",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
+							"state": "Inactive",
+							"onInactiveMarkAs": "Succeeded",
+							"dependsOn": [],
 							"policy": {
 								"timeout": "0.12:00:00",
 								"retry": 0,
@@ -674,14 +518,9 @@
 						{
 							"name": "Failure",
 							"type": "WebActivity",
-							"dependsOn": [
-								{
-									"activity": "SP_Insert_Error",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
+							"state": "Inactive",
+							"onInactiveMarkAs": "Succeeded",
+							"dependsOn": [],
 							"policy": {
 								"timeout": "0.12:00:00",
 								"retry": 0,
