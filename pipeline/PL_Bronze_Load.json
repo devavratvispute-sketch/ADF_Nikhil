@@ -12,17 +12,6 @@
 						"value": "@equals(pipeline().parameters.extract_type,'FILE')",
 						"type": "Expression"
 					},
-					"ifFalseActivities": [
-						{
-							"name": "Wait1",
-							"type": "Wait",
-							"dependsOn": [],
-							"userProperties": [],
-							"typeProperties": {
-								"waitTimeInSeconds": 1
-							}
-						}
-					],
 					"ifTrueActivities": [
 						{
 							"name": "Copy_Landing_To_Bronze",
@@ -309,10 +298,8 @@
 							}
 						},
 						{
-							"name": "Web1_copy1",
+							"name": "Failure",
 							"type": "WebActivity",
-							"state": "Inactive",
-							"onInactiveMarkAs": "Succeeded",
 							"dependsOn": [
 								{
 									"activity": "SP_Insert_Error",
@@ -328,7 +315,20 @@
 								"secureOutput": false,
 								"secureInput": false
 							},
-							"userProperties": []
+							"userProperties": [],
+							"typeProperties": {
+								"method": "POST",
+								"headers": {
+									"Content-Type": "application/json"
+								},
+								"url": "https://prod-28.northcentralus.logic.azure.com:443/workflows/7b4db3a9950e444b86f522d96d095371/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=XNEWis6fL5ytnd40jPZxzffgzXdOm98SN_Xj9_uyDa8",
+								"body": {
+									"PipelineName": "@{pipeline().Pipeline}",
+									"Status": "Failed",
+									"FileName": "@{pipeline().parameters.extract_name}",
+									"Message": "Landing to Bronze copy failed"
+								}
+							}
 						}
 					]
 				}
