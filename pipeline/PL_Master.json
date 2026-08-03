@@ -23,7 +23,17 @@
 					},
 					"dataset": {
 						"referenceName": "AzureSqlTable",
-						"type": "DatasetReference"
+						"type": "DatasetReference",
+						"parameters": {
+							"SchemaName": {
+								"value": "dbo",
+								"type": "Expression"
+							},
+							"TableName": {
+								"value": "ControlTable_config",
+								"type": "Expression"
+							}
+						}
 					},
 					"firstRowOnly": false
 				}

@@ -93,7 +93,14 @@
 						{
 							"name": "SP_Insert_Audit_copy1",
 							"type": "SqlServerStoredProcedure",
-							"dependsOn": [],
+							"dependsOn": [
+								{
+									"activity": "Lookup_Last_Watermark",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
 							"policy": {
 								"timeout": "0.12:00:00",
 								"retry": 0,
@@ -329,6 +336,30 @@
 									"Status": "Failed",
 									"FileName": "@{pipeline().parameters.extract_name}",
 									"Message": "Landing to Bronze copy failed"
+								}
+							}
+						},
+						{
+							"name": "Lookup_Last_Watermark",
+							"type": "Lookup",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "AzureSqlSource",
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"dataset": {
+									"referenceName": "AzureSqlTable",
+									"type": "DatasetReference"
 								}
 							}
 						}
