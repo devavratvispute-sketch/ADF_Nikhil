@@ -35,6 +35,10 @@
 							"typeProperties": {
 								"source": {
 									"type": "SqlServerSource",
+									"sqlReaderQuery": {
+										"value": "@concat(\n'SELECT * FROM dbo.Products WHERE ModifiedDate > ''',\nactivity('Lookup_Last_Watermark').output.firstRow.last_watermark,\n''''\n)",
+										"type": "Expression"
+									},
 									"queryTimeout": "02:00:00",
 									"partitionOption": "None"
 								},
