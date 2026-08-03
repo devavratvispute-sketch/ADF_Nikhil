@@ -201,7 +201,7 @@
 								{
 									"activity": "Copy_Landing_To_Bronze",
 									"dependencyConditions": [
-										"Succeeded"
+										"Failed"
 									]
 								}
 							],
@@ -228,7 +228,10 @@
 										"type": "String"
 									},
 									"error_message": {
-										"value": "@activity('Copy_Landing_To_Bronze').Error.Message",
+										"value": {
+											"value": "Null",
+											"type": "Expression"
+										},
 										"type": "String"
 									},
 									"extract_id": {
