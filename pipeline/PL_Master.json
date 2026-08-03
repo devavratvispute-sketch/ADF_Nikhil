@@ -66,13 +66,42 @@
 										"value": "@item().extract_name",
 										"type": "Expression"
 									},
-									"extract_type": "@item().extract_type",
-									"extract_container": "@item().extract_container",
-									"extract_path": "@item().extract_path",
-									"target_container": "@item().target_container",
-									"target_path": "@item().target_path",
-									"extract_load_type": "@item().extract_load_type",
-									"extract_id": "@item().id"
+									"extract_type": {
+										"value": "@item().extract_type",
+										"type": "Expression"
+									},
+									"extract_container": {
+										"value": "@item().extract_container",
+										"type": "Expression"
+									},
+									"extract_path": {
+										"value": "@item().extract_path",
+										"type": "Expression"
+									},
+									"target_container": {
+										"value": "@item().target_container",
+										"type": "Expression"
+									},
+									"target_path": {
+										"value": "@item().target_path",
+										"type": "Expression"
+									},
+									"extract_load_type": {
+										"value": "@item().extract_load_type",
+										"type": "Expression"
+									},
+									"extract_id": {
+										"value": "@item().id",
+										"type": "Expression"
+									},
+									"source_schema": {
+										"value": "@item().source_schema",
+										"type": "Expression"
+									},
+									"source_table": {
+										"value": "@item().source_table",
+										"type": "Expression"
+									}
 								}
 							}
 						}
