@@ -1,0 +1,27 @@
+{
+	"name": "AzureDatabricksDeltaLakeDataset1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureDatabricksDeltaLake1",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"table_name": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "Source"
+		},
+		"annotations": [],
+		"type": "AzureDatabricksDeltaLakeDataset",
+		"typeProperties": {
+			"database": "silver",
+			"table": {
+				"value": "@dataset().table_name",
+				"type": "Expression"
+			}
+		},
+		"schema": []
+	}
+}
