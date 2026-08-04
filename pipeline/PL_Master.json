@@ -115,6 +115,72 @@
 									"extract_file_type": "@item().extract_file_type"
 								}
 							}
+						},
+						{
+							"name": "Success",
+							"type": "WebActivity",
+							"dependsOn": [
+								{
+									"activity": "Execute Pipeline1",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"method": "POST",
+								"headers": {
+									"Content-Type": "application/json"
+								},
+								"url": "https://prod-28.northcentralus.logic.azure.com:443/workflows/7b4db3a9950e444b86f522d96d095371/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=XNEWis6fL5ytnd40jPZxzffgzXdOm98SN_Xj9_uyDa8",
+								"body": {
+									"PipelineName": "@{pipeline().Pipeline}",
+									"Status": "Success",
+									"FileName": "@{pipeline().parameters.extract_name}",
+									"Message": "Pipeline completed successfully"
+								}
+							}
+						},
+						{
+							"name": "Failure",
+							"type": "WebActivity",
+							"dependsOn": [
+								{
+									"activity": "Execute Pipeline1",
+									"dependencyConditions": [
+										"Failed"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"method": "POST",
+								"headers": {
+									"Content-Type": "application/json"
+								},
+								"url": "https://prod-28.northcentralus.logic.azure.com:443/workflows/7b4db3a9950e444b86f522d96d095371/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=XNEWis6fL5ytnd40jPZxzffgzXdOm98SN_Xj9_uyDa8",
+								"body": {
+									"PipelineName": "@{pipeline().Pipeline}",
+									"Status": "Failed",
+									"FileName": "@{pipeline().parameters.extract_name}",
+									"Message": "Pipeline failed. Please check ADF monitor."
+								}
+							}
 						}
 					]
 				}
