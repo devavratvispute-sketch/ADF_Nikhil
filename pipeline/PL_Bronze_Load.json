@@ -3,608 +3,1028 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "If Condition1",
-				"type": "IfCondition",
+				"name": "Switch1",
+				"type": "Switch",
 				"dependsOn": [],
 				"userProperties": [],
 				"typeProperties": {
-					"expression": {
-						"value": "@equals(pipeline().parameters.extract_type,'FILE')",
+					"on": {
+						"value": "@pipeline().parameters.extract_file_type",
 						"type": "Expression"
 					},
-					"ifFalseActivities": [
+					"cases": [
 						{
-							"name": "Copy_Landing_To_Bronze",
-							"type": "Copy",
-							"dependsOn": [
+							"value": "csv",
+							"activities": [
 								{
-									"activity": "Lookup1",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
-							"policy": {
-								"timeout": "0.12:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"source": {
-									"type": "SqlServerSource",
-									"queryTimeout": "02:00:00",
-									"partitionOption": "None"
-								},
-								"sink": {
-									"type": "DelimitedTextSink",
-									"storeSettings": {
-										"type": "AzureBlobFSWriteSettings"
+									"name": "Copy_Landing_To_Bronze_File_csv",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
 									},
-									"formatSettings": {
-										"type": "DelimitedTextWriteSettings",
-										"quoteAllText": true,
-										"fileExtension": ".txt"
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "DelimitedTextSource",
+											"storeSettings": {
+												"type": "AzureBlobFSReadSettings",
+												"recursive": true,
+												"enablePartitionDiscovery": false
+											},
+											"formatSettings": {
+												"type": "DelimitedTextReadSettings"
+											}
+										},
+										"sink": {
+											"type": "DelimitedTextSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "DelimitedTextWriteSettings",
+												"quoteAllText": true,
+												"fileExtension": ".txt"
+											}
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "DS_Landing_CSV",
+											"type": "DatasetReference",
+											"parameters": {
+												"Container": {
+													"value": "@pipeline().parameters.extract_container",
+													"type": "Expression"
+												},
+												"FolderPath": {
+													"value": "@pipeline().parameters.extract_path",
+													"type": "Expression"
+												},
+												"FileName": {
+													"value": "@concat(pipeline().parameters.extract_name,'.csv')",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "DS_Bronze_CSV_sink",
+											"type": "DatasetReference",
+											"parameters": {
+												"Container": "@pipeline().parameters.target_container",
+												"FolderPath": "@pipeline().parameters.target_path",
+												"FileName": {
+													"value": "@concat(\n    pipeline().parameters.extract_name,\n    '_',\n    formatDateTime(utcNow(),'yyyyMMddHHmmss'),\n    '.csv'\n)",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								},
+								{
+									"name": "SP_Insert_Audit_csv",
+									"type": "SqlServerStoredProcedure",
+									"dependsOn": [
+										{
+											"activity": "SqlLoad_csv",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"storedProcedureName": "[dbo].[usp_Insert_Audit]",
+										"storedProcedureParameters": {
+											"extract_id": {
+												"value": {
+													"value": "@pipeline().parameters.extract_id",
+													"type": "Expression"
+												},
+												"type": "Int32"
+											},
+											"file_size": {
+												"value": "0",
+												"type": "Int32"
+											},
+											"run_id": {
+												"value": {
+													"value": "@pipeline().parameters.extract_id",
+													"type": "Expression"
+												},
+												"type": "String"
+											},
+											"Source_count": {
+												"value": {
+													"value": "@activity('Copy_Landing_To_Bronze_File_csv').output.dataRead\n",
+													"type": "Expression"
+												},
+												"type": "Int32"
+											},
+											"status": {
+												"value": "Success",
+												"type": "String"
+											},
+											"target_count": {
+												"value": {
+													"value": "@activity('Copy_Landing_To_Bronze_File_csv').output.dataWritten",
+													"type": "Expression"
+												},
+												"type": "Int32"
+											}
+										}
+									},
+									"linkedServiceName": {
+										"referenceName": "AzureSqlDatabase",
+										"type": "LinkedServiceReference"
 									}
 								},
-								"enableStaging": false,
-								"translator": {
-									"type": "TabularTranslator",
-									"typeConversion": true,
-									"typeConversionSettings": {
-										"allowDataTruncation": true,
-										"treatBooleanAsNumber": false
-									}
-								}
-							},
-							"inputs": [
 								{
-									"referenceName": "DS_sql_bronze",
-									"type": "DatasetReference",
-									"parameters": {
-										"SchemaName": {
-											"value": "@pipeline().parameters.source_schema",
-											"type": "Expression"
-										},
-										"TableName": {
-											"value": "@pipeline().parameters.source_table",
-											"type": "Expression"
+									"name": "SP_Insert_Error_csv",
+									"type": "SqlServerStoredProcedure",
+									"dependsOn": [
+										{
+											"activity": "Wait2_csv",
+											"dependencyConditions": [
+												"Succeeded"
+											]
 										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"storedProcedureName": "[dbo].[usp_Insert_Error]",
+										"storedProcedureParameters": {
+											"activity_name": {
+												"value": "Copy_Landing_To_Bronze",
+												"type": "String"
+											},
+											"error_code": {
+												"value": {
+													"value": "NULL",
+													"type": "Expression"
+												},
+												"type": "String"
+											},
+											"error_message": {
+												"value": {
+													"value": "Null",
+													"type": "Expression"
+												},
+												"type": "String"
+											},
+											"extract_id": {
+												"value": {
+													"value": "@pipeline().parameters.extract_id",
+													"type": "Expression"
+												},
+												"type": "Int32"
+											},
+											"pipeline_name": {
+												"value": {
+													"value": "@pipeline().Pipeline",
+													"type": "Expression"
+												},
+												"type": "String"
+											},
+											"run_id": {
+												"value": {
+													"value": "@pipeline().RunId",
+													"type": "Expression"
+												},
+												"type": "String"
+											}
+										}
+									},
+									"linkedServiceName": {
+										"referenceName": "AzureSqlDatabase",
+										"type": "LinkedServiceReference"
 									}
-								}
-							],
-							"outputs": [
+								},
 								{
-									"referenceName": "DS_Bronze_CSV_sink",
-									"type": "DatasetReference",
-									"parameters": {
-										"Container": "@pipeline().parameters.target_container",
-										"FolderPath": "@pipeline().parameters.target_path",
-										"FileName": {
-											"value": "@concat(\n    pipeline().parameters.extract_name,\n    '_',\n    formatDateTime(utcNow(),'yyyyMMddHHmmss'),\n    '.csv'\n)",
-											"type": "Expression"
+									"name": "Wait2_csv",
+									"type": "Wait",
+									"dependsOn": [
+										{
+											"activity": "Copy_Landing_To_Bronze_File_csv",
+											"dependencyConditions": [
+												"Failed"
+											]
 										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"waitTimeInSeconds": 30
+									}
+								},
+								{
+									"name": "Bronze Notebook_csv",
+									"type": "DatabricksNotebook",
+									"dependsOn": [
+										{
+											"activity": "Copy_Landing_To_Bronze_File_csv",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"notebookPath": "/Repos/nikhilvispute411@gmail.com/Naveen_Project_1/Bronze/01_Bronze_Load",
+										"baseParameters": {
+											"table_name": {
+												"value": "orders",
+												"type": "Expression"
+											},
+											"file_format": {
+												"value": "@pipeline().parameters.extract_file_type",
+												"type": "Expression"
+											}
+										}
+									},
+									"linkedServiceName": {
+										"referenceName": "LS_Databricks",
+										"type": "LinkedServiceReference"
+									}
+								},
+								{
+									"name": "Silver Notebook_csv",
+									"type": "DatabricksNotebook",
+									"dependsOn": [
+										{
+											"activity": "Bronze Notebook_csv",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"notebookPath": "/Repos/nikhilvispute411@gmail.com/Naveen_Project_1/Silver/02_Silver_Load",
+										"baseParameters": {
+											"table_name": {
+												"value": "@pipeline().parameters.extract_name",
+												"type": "Expression"
+											},
+											"extract_load_type": {
+												"value": "@pipeline().parameters.extract_load_type",
+												"type": "Expression"
+											}
+										}
+									},
+									"linkedServiceName": {
+										"referenceName": "LS_Databricks",
+										"type": "LinkedServiceReference"
+									}
+								},
+								{
+									"name": "SqlLoad_csv",
+									"type": "DatabricksNotebook",
+									"dependsOn": [
+										{
+											"activity": "Silver Notebook_csv",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"notebookPath": "/Repos/nikhilvispute411@gmail.com/Naveen_Project_1/Sql_Load/03_SQL_Load",
+										"baseParameters": {
+											"table_name": {
+												"value": "@pipeline().parameters.extract_name",
+												"type": "Expression"
+											}
+										}
+									},
+									"linkedServiceName": {
+										"referenceName": "LS_Databricks",
+										"type": "LinkedServiceReference"
 									}
 								}
 							]
 						},
 						{
-							"name": "SP_Insert_Audit_copy3",
-							"type": "SqlServerStoredProcedure",
-							"dependsOn": [
+							"value": "RDBMS",
+							"activities": [
 								{
-									"activity": "Copy_Landing_To_Bronze",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
-							"policy": {
-								"timeout": "0.12:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"storedProcedureName": "[dbo].[usp_Insert_Audit]",
-								"storedProcedureParameters": {
-									"extract_id": {
-										"value": {
-											"value": "@pipeline().parameters.extract_id",
-											"type": "Expression"
+									"name": "Lookup1",
+									"type": "Lookup",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "AzureSqlSource",
+											"sqlReaderQuery": "select last_watermark from Watermark_Table",
+											"queryTimeout": "02:00:00",
+											"partitionOption": "None"
 										},
-										"type": "Int32"
-									},
-									"file_size": {
-										"value": "0",
-										"type": "Int32"
-									},
-									"run_id": {
-										"value": {
-											"value": "@pipeline().parameters.extract_id",
-											"type": "Expression"
-										},
-										"type": "String"
-									},
-									"Source_count": {
-										"value": {
-											"value": "@activity('Copy_Landing_To_Bronze').output.rowsRead",
-											"type": "Expression"
-										},
-										"type": "Int32"
-									},
-									"status": {
-										"value": "Success",
-										"type": "String"
-									},
-									"target_count": {
-										"value": {
-											"value": "@activity('Copy_Landing_To_Bronze').output.rowsCopied",
-											"type": "Expression"
-										},
-										"type": "Int32"
-									}
-								}
-							},
-							"linkedServiceName": {
-								"referenceName": "AzureSqlDatabase",
-								"type": "LinkedServiceReference"
-							}
-						},
-						{
-							"name": "SP_Insert_Error_copy3",
-							"type": "SqlServerStoredProcedure",
-							"dependsOn": [
-								{
-									"activity": "Wait2_copy3",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
-							"policy": {
-								"timeout": "0.12:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"storedProcedureName": "[dbo].[usp_Insert_Error]",
-								"storedProcedureParameters": {
-									"activity_name": {
-										"value": "Copy_Landing_To_Bronze",
-										"type": "String"
-									},
-									"error_code": {
-										"value": {
-											"value": "NULL",
-											"type": "Expression"
-										},
-										"type": "String"
-									},
-									"error_message": {
-										"value": {
-											"value": "Null",
-											"type": "Expression"
-										},
-										"type": "String"
-									},
-									"extract_id": {
-										"value": {
-											"value": "@pipeline().parameters.extract_id",
-											"type": "Expression"
-										},
-										"type": "Int32"
-									},
-									"pipeline_name": {
-										"value": {
-											"value": "@pipeline().Pipeline",
-											"type": "Expression"
-										},
-										"type": "String"
-									},
-									"run_id": {
-										"value": {
-											"value": "@pipeline().RunId",
-											"type": "Expression"
-										},
-										"type": "String"
-									}
-								}
-							},
-							"linkedServiceName": {
-								"referenceName": "AzureSqlDatabase",
-								"type": "LinkedServiceReference"
-							}
-						},
-						{
-							"name": "Wait2_copy3",
-							"type": "Wait",
-							"dependsOn": [
-								{
-									"activity": "Copy_Landing_To_Bronze",
-									"dependencyConditions": [
-										"Failed"
-									]
-								}
-							],
-							"userProperties": [],
-							"typeProperties": {
-								"waitTimeInSeconds": 30
-							}
-						},
-						{
-							"name": "Lookup1",
-							"type": "Lookup",
-							"dependsOn": [],
-							"policy": {
-								"timeout": "0.12:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"source": {
-									"type": "AzureSqlSource",
-									"sqlReaderQuery": "select last_watermark from Watermark_Table",
-									"queryTimeout": "02:00:00",
-									"partitionOption": "None"
-								},
-								"dataset": {
-									"referenceName": "AzureSqlTable",
-									"type": "DatasetReference",
-									"parameters": {
-										"SchemaName": "dbo",
-										"TableName": "Watermark_Table"
-									}
-								}
-							}
-						}
-					],
-					"ifTrueActivities": [
-						{
-							"name": "Copy_Landing_To_Bronze_File",
-							"type": "Copy",
-							"dependsOn": [],
-							"policy": {
-								"timeout": "0.12:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"source": {
-									"type": "DelimitedTextSource",
-									"storeSettings": {
-										"type": "AzureBlobFSReadSettings",
-										"recursive": true,
-										"enablePartitionDiscovery": false
-									},
-									"formatSettings": {
-										"type": "DelimitedTextReadSettings"
-									}
-								},
-								"sink": {
-									"type": "DelimitedTextSink",
-									"storeSettings": {
-										"type": "AzureBlobFSWriteSettings"
-									},
-									"formatSettings": {
-										"type": "DelimitedTextWriteSettings",
-										"quoteAllText": true,
-										"fileExtension": ".txt"
-									}
-								},
-								"enableStaging": false,
-								"translator": {
-									"type": "TabularTranslator",
-									"typeConversion": true,
-									"typeConversionSettings": {
-										"allowDataTruncation": true,
-										"treatBooleanAsNumber": false
-									}
-								}
-							},
-							"inputs": [
-								{
-									"referenceName": "DS_Landing_CSV",
-									"type": "DatasetReference",
-									"parameters": {
-										"Container": {
-											"value": "@pipeline().parameters.extract_container",
-											"type": "Expression"
-										},
-										"FolderPath": {
-											"value": "@pipeline().parameters.extract_path",
-											"type": "Expression"
-										},
-										"FileName": {
-											"value": "@concat(pipeline().parameters.extract_name,'.csv')",
-											"type": "Expression"
+										"dataset": {
+											"referenceName": "AzureSqlTable",
+											"type": "DatasetReference",
+											"parameters": {
+												"SchemaName": "dbo",
+												"TableName": "Watermark_Table"
+											}
 										}
 									}
-								}
-							],
-							"outputs": [
+								},
 								{
-									"referenceName": "DS_Bronze_CSV_sink",
-									"type": "DatasetReference",
-									"parameters": {
-										"Container": "@pipeline().parameters.target_container",
-										"FolderPath": "@pipeline().parameters.target_path",
-										"FileName": {
-											"value": "@concat(\n    pipeline().parameters.extract_name,\n    '_',\n    formatDateTime(utcNow(),'yyyyMMddHHmmss'),\n    '.csv'\n)",
-											"type": "Expression"
+									"name": "Copy_Landing_To_Bronze_Rdbms",
+									"type": "Copy",
+									"dependsOn": [
+										{
+											"activity": "Lookup1",
+											"dependencyConditions": [
+												"Succeeded"
+											]
 										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "SqlServerSource",
+											"queryTimeout": "02:00:00",
+											"partitionOption": "None"
+										},
+										"sink": {
+											"type": "DelimitedTextSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "DelimitedTextWriteSettings",
+												"quoteAllText": true,
+												"fileExtension": ".txt"
+											}
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "DS_sql_bronze",
+											"type": "DatasetReference",
+											"parameters": {
+												"SchemaName": {
+													"value": "@pipeline().parameters.source_schema",
+													"type": "Expression"
+												},
+												"TableName": {
+													"value": "@pipeline().parameters.source_table",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "DS_Bronze_CSV_sink",
+											"type": "DatasetReference",
+											"parameters": {
+												"Container": "@pipeline().parameters.target_container",
+												"FolderPath": "@pipeline().parameters.target_path",
+												"FileName": {
+													"value": "@concat(\n    pipeline().parameters.extract_name,\n    '_',\n    formatDateTime(utcNow(),'yyyyMMddHHmmss'),\n    '.csv'\n)",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								},
+								{
+									"name": "SP_Insert_Audit__Rdbms",
+									"type": "SqlServerStoredProcedure",
+									"dependsOn": [
+										{
+											"activity": "SqlLoad__Rdbms",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"storedProcedureName": "[dbo].[usp_Insert_Audit]",
+										"storedProcedureParameters": {
+											"extract_id": {
+												"value": {
+													"value": "@pipeline().parameters.extract_id",
+													"type": "Expression"
+												},
+												"type": "Int32"
+											},
+											"file_size": {
+												"value": "0",
+												"type": "Int32"
+											},
+											"run_id": {
+												"value": {
+													"value": "@pipeline().parameters.extract_id",
+													"type": "Expression"
+												},
+												"type": "String"
+											},
+											"Source_count": {
+												"value": {
+													"value": "@activity('Copy_Landing_To_Bronze_Rdbms').output.rowsRead",
+													"type": "Expression"
+												},
+												"type": "Int32"
+											},
+											"status": {
+												"value": "Success",
+												"type": "String"
+											},
+											"target_count": {
+												"value": {
+													"value": "@activity('Copy_Landing_To_Bronze_Rdbms').output.rowsCopied",
+													"type": "Expression"
+												},
+												"type": "Int32"
+											}
+										}
+									},
+									"linkedServiceName": {
+										"referenceName": "AzureSqlDatabase",
+										"type": "LinkedServiceReference"
+									}
+								},
+								{
+									"name": "Wait__Rdbms",
+									"type": "Wait",
+									"dependsOn": [
+										{
+											"activity": "Copy_Landing_To_Bronze_Rdbms",
+											"dependencyConditions": [
+												"Failed"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"waitTimeInSeconds": 30
+									}
+								},
+								{
+									"name": "SP_Insert_Error__Rdbms",
+									"type": "SqlServerStoredProcedure",
+									"dependsOn": [
+										{
+											"activity": "Wait__Rdbms",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"storedProcedureName": "[dbo].[usp_Insert_Error]",
+										"storedProcedureParameters": {
+											"activity_name": {
+												"value": "Copy_Landing_To_Bronze",
+												"type": "String"
+											},
+											"error_code": {
+												"value": {
+													"value": "NULL",
+													"type": "Expression"
+												},
+												"type": "String"
+											},
+											"error_message": {
+												"value": {
+													"value": "Null",
+													"type": "Expression"
+												},
+												"type": "String"
+											},
+											"extract_id": {
+												"value": {
+													"value": "@pipeline().parameters.extract_id",
+													"type": "Expression"
+												},
+												"type": "Int32"
+											},
+											"pipeline_name": {
+												"value": {
+													"value": "@pipeline().Pipeline",
+													"type": "Expression"
+												},
+												"type": "String"
+											},
+											"run_id": {
+												"value": {
+													"value": "@pipeline().RunId",
+													"type": "Expression"
+												},
+												"type": "String"
+											}
+										}
+									},
+									"linkedServiceName": {
+										"referenceName": "AzureSqlDatabase",
+										"type": "LinkedServiceReference"
+									}
+								},
+								{
+									"name": "Bronze Notebook__Rdbms",
+									"type": "DatabricksNotebook",
+									"dependsOn": [
+										{
+											"activity": "Copy_Landing_To_Bronze_Rdbms",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"notebookPath": "/Repos/nikhilvispute411@gmail.com/Naveen_Project_1/Bronze/01_Bronze_Load",
+										"baseParameters": {
+											"table_name": {
+												"value": "orders",
+												"type": "Expression"
+											},
+											"file_format": {
+												"value": "@pipeline().parameters.extract_file_type",
+												"type": "Expression"
+											}
+										}
+									},
+									"linkedServiceName": {
+										"referenceName": "LS_Databricks",
+										"type": "LinkedServiceReference"
+									}
+								},
+								{
+									"name": "Silver Notebook__Rdbms",
+									"type": "DatabricksNotebook",
+									"dependsOn": [
+										{
+											"activity": "Bronze Notebook__Rdbms",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"notebookPath": "/Repos/nikhilvispute411@gmail.com/Naveen_Project_1/Silver/02_Silver_Load",
+										"baseParameters": {
+											"table_name": {
+												"value": "@pipeline().parameters.extract_name",
+												"type": "Expression"
+											},
+											"extract_load_type": {
+												"value": "@pipeline().parameters.extract_load_type",
+												"type": "Expression"
+											}
+										}
+									},
+									"linkedServiceName": {
+										"referenceName": "LS_Databricks",
+										"type": "LinkedServiceReference"
+									}
+								},
+								{
+									"name": "SqlLoad__Rdbms",
+									"type": "DatabricksNotebook",
+									"dependsOn": [
+										{
+											"activity": "Silver Notebook__Rdbms",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"notebookPath": "/Repos/nikhilvispute411@gmail.com/Naveen_Project_1/Sql_Load/03_SQL_Load",
+										"baseParameters": {
+											"table_name": {
+												"value": "@pipeline().parameters.extract_name",
+												"type": "Expression"
+											}
+										}
+									},
+									"linkedServiceName": {
+										"referenceName": "LS_Databricks",
+										"type": "LinkedServiceReference"
 									}
 								}
 							]
 						},
 						{
-							"name": "SP_Insert_Audit",
-							"type": "SqlServerStoredProcedure",
-							"dependsOn": [
+							"value": "pdf",
+							"activities": [
 								{
-									"activity": "SqlLoad",
-									"dependencyConditions": [
-										"Succeeded"
+									"name": "Copy_Landing_To_Bronze_File",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "BinarySource",
+											"storeSettings": {
+												"type": "AzureBlobFSReadSettings",
+												"recursive": true
+											},
+											"formatSettings": {
+												"type": "BinaryReadSettings"
+											}
+										},
+										"sink": {
+											"type": "BinarySink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											}
+										},
+										"enableStaging": false
+									},
+									"inputs": [
+										{
+											"referenceName": "ds_pdf_src",
+											"type": "DatasetReference"
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "ds_pdf_target",
+											"type": "DatasetReference"
+										}
 									]
-								}
-							],
-							"policy": {
-								"timeout": "0.12:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"storedProcedureName": "[dbo].[usp_Insert_Audit]",
-								"storedProcedureParameters": {
-									"extract_id": {
-										"value": {
-											"value": "@pipeline().parameters.extract_id",
-											"type": "Expression"
-										},
-										"type": "Int32"
+								},
+								{
+									"name": "SP_Insert_Audit",
+									"type": "SqlServerStoredProcedure",
+									"dependsOn": [
+										{
+											"activity": "SqlLoad",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
 									},
-									"file_size": {
-										"value": "0",
-										"type": "Int32"
+									"userProperties": [],
+									"typeProperties": {
+										"storedProcedureName": "[dbo].[usp_Insert_Audit]",
+										"storedProcedureParameters": {
+											"extract_id": {
+												"value": {
+													"value": "@pipeline().parameters.extract_id",
+													"type": "Expression"
+												},
+												"type": "Int32"
+											},
+											"file_size": {
+												"value": "0",
+												"type": "Int32"
+											},
+											"run_id": {
+												"value": {
+													"value": "@pipeline().parameters.extract_id",
+													"type": "Expression"
+												},
+												"type": "String"
+											},
+											"Source_count": {
+												"value": {
+													"value": "@activity('Copy_Landing_To_Bronze_File').output.dataRead\n",
+													"type": "Expression"
+												},
+												"type": "Int32"
+											},
+											"status": {
+												"value": "Success",
+												"type": "String"
+											},
+											"target_count": {
+												"value": {
+													"value": "@activity('Copy_Landing_To_Bronze_File').output.dataWritten",
+													"type": "Expression"
+												},
+												"type": "Int32"
+											}
+										}
 									},
-									"run_id": {
-										"value": {
-											"value": "@pipeline().parameters.extract_id",
-											"type": "Expression"
-										},
-										"type": "String"
+									"linkedServiceName": {
+										"referenceName": "AzureSqlDatabase",
+										"type": "LinkedServiceReference"
+									}
+								},
+								{
+									"name": "SP_Insert_Error",
+									"type": "SqlServerStoredProcedure",
+									"dependsOn": [
+										{
+											"activity": "Wait2",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
 									},
-									"Source_count": {
-										"value": {
-											"value": "@activity('Copy_Landing_To_Bronze_File').output.dataRead\n",
-											"type": "Expression"
-										},
-										"type": "Int32"
+									"userProperties": [],
+									"typeProperties": {
+										"storedProcedureName": "[dbo].[usp_Insert_Error]",
+										"storedProcedureParameters": {
+											"activity_name": {
+												"value": "Copy_Landing_To_Bronze",
+												"type": "String"
+											},
+											"error_code": {
+												"value": {
+													"value": "NULL",
+													"type": "Expression"
+												},
+												"type": "String"
+											},
+											"error_message": {
+												"value": {
+													"value": "Null",
+													"type": "Expression"
+												},
+												"type": "String"
+											},
+											"extract_id": {
+												"value": {
+													"value": "@pipeline().parameters.extract_id",
+													"type": "Expression"
+												},
+												"type": "Int32"
+											},
+											"pipeline_name": {
+												"value": {
+													"value": "@pipeline().Pipeline",
+													"type": "Expression"
+												},
+												"type": "String"
+											},
+											"run_id": {
+												"value": {
+													"value": "@pipeline().RunId",
+													"type": "Expression"
+												},
+												"type": "String"
+											}
+										}
 									},
-									"status": {
-										"value": "Success",
-										"type": "String"
+									"linkedServiceName": {
+										"referenceName": "AzureSqlDatabase",
+										"type": "LinkedServiceReference"
+									}
+								},
+								{
+									"name": "Wait2",
+									"type": "Wait",
+									"dependsOn": [
+										{
+											"activity": "Copy_Landing_To_Bronze_File",
+											"dependencyConditions": [
+												"Failed"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"waitTimeInSeconds": 30
+									}
+								},
+								{
+									"name": "Bronze Notebook",
+									"type": "DatabricksNotebook",
+									"dependsOn": [
+										{
+											"activity": "Copy_Landing_To_Bronze_File",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
 									},
-									"target_count": {
-										"value": {
-											"value": "@activity('Copy_Landing_To_Bronze_File').output.dataWritten",
-											"type": "Expression"
-										},
-										"type": "Int32"
+									"userProperties": [],
+									"typeProperties": {
+										"notebookPath": "/Repos/nikhilvispute411@gmail.com/Naveen_Project_1/Bronze/01_Bronze_Load",
+										"baseParameters": {
+											"table_name": {
+												"value": "orders",
+												"type": "Expression"
+											},
+											"file_format": {
+												"value": "@pipeline().parameters.extract_file_type",
+												"type": "Expression"
+											}
+										}
+									},
+									"linkedServiceName": {
+										"referenceName": "LS_Databricks",
+										"type": "LinkedServiceReference"
+									}
+								},
+								{
+									"name": "Silver Notebook",
+									"type": "DatabricksNotebook",
+									"dependsOn": [
+										{
+											"activity": "Bronze Notebook",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"notebookPath": "/Repos/nikhilvispute411@gmail.com/Naveen_Project_1/Silver/02_Silver_Load",
+										"baseParameters": {
+											"table_name": {
+												"value": "@pipeline().parameters.extract_name",
+												"type": "Expression"
+											},
+											"extract_load_type": {
+												"value": "@pipeline().parameters.extract_load_type",
+												"type": "Expression"
+											}
+										}
+									},
+									"linkedServiceName": {
+										"referenceName": "LS_Databricks",
+										"type": "LinkedServiceReference"
+									}
+								},
+								{
+									"name": "SqlLoad",
+									"type": "DatabricksNotebook",
+									"dependsOn": [
+										{
+											"activity": "Silver Notebook",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"notebookPath": "/Repos/nikhilvispute411@gmail.com/Naveen_Project_1/Sql_Load/03_SQL_Load",
+										"baseParameters": {
+											"table_name": {
+												"value": "@pipeline().parameters.extract_name",
+												"type": "Expression"
+											}
+										}
+									},
+									"linkedServiceName": {
+										"referenceName": "LS_Databricks",
+										"type": "LinkedServiceReference"
 									}
 								}
-							},
-							"linkedServiceName": {
-								"referenceName": "AzureSqlDatabase",
-								"type": "LinkedServiceReference"
-							}
-						},
-						{
-							"name": "SP_Insert_Error",
-							"type": "SqlServerStoredProcedure",
-							"dependsOn": [
-								{
-									"activity": "Wait2",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
-							"policy": {
-								"timeout": "0.12:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"storedProcedureName": "[dbo].[usp_Insert_Error]",
-								"storedProcedureParameters": {
-									"activity_name": {
-										"value": "Copy_Landing_To_Bronze",
-										"type": "String"
-									},
-									"error_code": {
-										"value": {
-											"value": "NULL",
-											"type": "Expression"
-										},
-										"type": "String"
-									},
-									"error_message": {
-										"value": {
-											"value": "Null",
-											"type": "Expression"
-										},
-										"type": "String"
-									},
-									"extract_id": {
-										"value": {
-											"value": "@pipeline().parameters.extract_id",
-											"type": "Expression"
-										},
-										"type": "Int32"
-									},
-									"pipeline_name": {
-										"value": {
-											"value": "@pipeline().Pipeline",
-											"type": "Expression"
-										},
-										"type": "String"
-									},
-									"run_id": {
-										"value": {
-											"value": "@pipeline().RunId",
-											"type": "Expression"
-										},
-										"type": "String"
-									}
-								}
-							},
-							"linkedServiceName": {
-								"referenceName": "AzureSqlDatabase",
-								"type": "LinkedServiceReference"
-							}
-						},
-						{
-							"name": "Wait2",
-							"type": "Wait",
-							"dependsOn": [
-								{
-									"activity": "Copy_Landing_To_Bronze_File",
-									"dependencyConditions": [
-										"Failed"
-									]
-								}
-							],
-							"userProperties": [],
-							"typeProperties": {
-								"waitTimeInSeconds": 30
-							}
-						},
-						{
-							"name": "Bronze Notebook",
-							"type": "DatabricksNotebook",
-							"dependsOn": [
-								{
-									"activity": "Copy_Landing_To_Bronze_File",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
-							"policy": {
-								"timeout": "0.12:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"notebookPath": "/Repos/nikhilvispute411@gmail.com/Naveen_Project_1/Bronze/01_Bronze_Load",
-								"baseParameters": {
-									"table_name": {
-										"value": "orders",
-										"type": "Expression"
-									},
-									"file_format": {
-										"value": "@pipeline().parameters.extract_file_type",
-										"type": "Expression"
-									}
-								}
-							},
-							"linkedServiceName": {
-								"referenceName": "LS_Databricks",
-								"type": "LinkedServiceReference"
-							}
-						},
-						{
-							"name": "Silver Notebook",
-							"type": "DatabricksNotebook",
-							"dependsOn": [
-								{
-									"activity": "Bronze Notebook",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
-							"policy": {
-								"timeout": "0.12:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"notebookPath": "/Repos/nikhilvispute411@gmail.com/Naveen_Project_1/Silver/02_Silver_Load",
-								"baseParameters": {
-									"table_name": {
-										"value": "@pipeline().parameters.extract_name",
-										"type": "Expression"
-									},
-									"extract_load_type": {
-										"value": "@pipeline().parameters.extract_load_type",
-										"type": "Expression"
-									}
-								}
-							},
-							"linkedServiceName": {
-								"referenceName": "LS_Databricks",
-								"type": "LinkedServiceReference"
-							}
-						},
-						{
-							"name": "SqlLoad",
-							"type": "DatabricksNotebook",
-							"dependsOn": [
-								{
-									"activity": "Silver Notebook",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
-							"policy": {
-								"timeout": "0.12:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"notebookPath": "/Repos/nikhilvispute411@gmail.com/Naveen_Project_1/Sql_Load/03_SQL_Load",
-								"baseParameters": {
-									"table_name": {
-										"value": "@pipeline().parameters.extract_name",
-										"type": "Expression"
-									}
-								}
-							},
-							"linkedServiceName": {
-								"referenceName": "LS_Databricks",
-								"type": "LinkedServiceReference"
-							}
+							]
 						}
 					]
 				}
