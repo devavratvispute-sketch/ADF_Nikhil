@@ -113,7 +113,10 @@
 								"storedProcedureName": "[dbo].[usp_Insert_Audit]",
 								"storedProcedureParameters": {
 									"extract_id": {
-										"value": "@pipeline().parameters.extract_id",
+										"value": {
+											"value": "@pipeline().parameters.extract_id",
+											"type": "Expression"
+										},
 										"type": "Int32"
 									},
 									"file_size": {
@@ -121,7 +124,10 @@
 										"type": "Int32"
 									},
 									"run_id": {
-										"value": "@pipeline().parameters.extract_id",
+										"value": {
+											"value": "@pipeline().parameters.extract_id",
+											"type": "Expression"
+										},
 										"type": "String"
 									},
 									"Source_count": {
@@ -349,7 +355,7 @@
 							"type": "SqlServerStoredProcedure",
 							"dependsOn": [
 								{
-									"activity": "Copy_Landing_To_Bronze_File",
+									"activity": "SqlLoad",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -367,7 +373,10 @@
 								"storedProcedureName": "[dbo].[usp_Insert_Audit]",
 								"storedProcedureParameters": {
 									"extract_id": {
-										"value": "@pipeline().parameters.extract_id",
+										"value": {
+											"value": "@pipeline().parameters.extract_id",
+											"type": "Expression"
+										},
 										"type": "Int32"
 									},
 									"file_size": {
@@ -375,7 +384,10 @@
 										"type": "Int32"
 									},
 									"run_id": {
-										"value": "@pipeline().parameters.extract_id",
+										"value": {
+											"value": "@pipeline().parameters.extract_id",
+											"type": "Expression"
+										},
 										"type": "String"
 									},
 									"Source_count": {
@@ -488,11 +500,16 @@
 							}
 						},
 						{
-							"name": "Success",
-							"type": "WebActivity",
-							"state": "Inactive",
-							"onInactiveMarkAs": "Succeeded",
-							"dependsOn": [],
+							"name": "Bronze Notebook",
+							"type": "DatabricksNotebook",
+							"dependsOn": [
+								{
+									"activity": "Copy_Landing_To_Bronze_File",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
 							"policy": {
 								"timeout": "0.12:00:00",
 								"retry": 0,
@@ -502,25 +519,34 @@
 							},
 							"userProperties": [],
 							"typeProperties": {
-								"method": "POST",
-								"headers": {
-									"Content-Type": "application/json"
-								},
-								"url": "https://prod-28.northcentralus.logic.azure.com:443/workflows/7b4db3a9950e444b86f522d96d095371/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=XNEWis6fL5ytnd40jPZxzffgzXdOm98SN_Xj9_uyDa8",
-								"body": {
-									"PipelineName": "@{pipeline().Pipeline}",
-									"Status": "Success",
-									"FileName": "@{pipeline().parameters.extract_name}",
-									"Message": "Landing to Bronze completed successfully"
+								"notebookPath": "/Repos/nikhilvispute411@gmail.com/Naveen_Project_1/Bronze/01_Bronze_Load",
+								"baseParameters": {
+									"table_name": {
+										"value": "orders",
+										"type": "Expression"
+									},
+									"file_format": {
+										"value": "@pipeline().parameters.extract_file_type",
+										"type": "Expression"
+									}
 								}
+							},
+							"linkedServiceName": {
+								"referenceName": "LS_Databricks",
+								"type": "LinkedServiceReference"
 							}
 						},
 						{
-							"name": "Failure",
-							"type": "WebActivity",
-							"state": "Inactive",
-							"onInactiveMarkAs": "Succeeded",
-							"dependsOn": [],
+							"name": "Silver Notebook",
+							"type": "DatabricksNotebook",
+							"dependsOn": [
+								{
+									"activity": "Bronze Notebook",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
 							"policy": {
 								"timeout": "0.12:00:00",
 								"retry": 0,
@@ -530,17 +556,54 @@
 							},
 							"userProperties": [],
 							"typeProperties": {
-								"method": "POST",
-								"headers": {
-									"Content-Type": "application/json"
-								},
-								"url": "https://prod-28.northcentralus.logic.azure.com:443/workflows/7b4db3a9950e444b86f522d96d095371/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=XNEWis6fL5ytnd40jPZxzffgzXdOm98SN_Xj9_uyDa8",
-								"body": {
-									"PipelineName": "@{pipeline().Pipeline}",
-									"Status": "Failed",
-									"FileName": "@{pipeline().parameters.extract_name}",
-									"Message": "Landing to Bronze copy failed"
+								"notebookPath": "/Repos/nikhilvispute411@gmail.com/Naveen_Project_1/Silver/02_Silver_Load",
+								"baseParameters": {
+									"table_name": {
+										"value": "@pipeline().parameters.extract_name",
+										"type": "Expression"
+									},
+									"extract_load_type": {
+										"value": "@pipeline().parameters.extract_load_type",
+										"type": "Expression"
+									}
 								}
+							},
+							"linkedServiceName": {
+								"referenceName": "LS_Databricks",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"name": "SqlLoad",
+							"type": "DatabricksNotebook",
+							"dependsOn": [
+								{
+									"activity": "Silver Notebook",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"notebookPath": "/Repos/nikhilvispute411@gmail.com/Naveen_Project_1/Sql_Load/03_SQL_Load",
+								"baseParameters": {
+									"table_name": {
+										"value": "@pipeline().parameters.extract_name",
+										"type": "Expression"
+									}
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "LS_Databricks",
+								"type": "LinkedServiceReference"
 							}
 						}
 					]
@@ -576,6 +639,9 @@
 				"type": "string"
 			},
 			"source_table": {
+				"type": "string"
+			},
+			"extract_file_type": {
 				"type": "string"
 			}
 		},
