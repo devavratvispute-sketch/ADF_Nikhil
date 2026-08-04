@@ -111,7 +111,8 @@
 									"source_table": {
 										"value": "@item().source_table",
 										"type": "Expression"
-									}
+									},
+									"extract_file_type": "@item().extract_file_type"
 								}
 							}
 						}
